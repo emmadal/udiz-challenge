@@ -13,6 +13,7 @@
   "dependencies": {
     "apollo-server": "^3.10.0",
     "bcrypt": "^5.0.1",
+    "dotenv": "^16.0.1",
     "esm": "^3.2.25",
     "graphql": "^16.5.0",
     "jsonwebtoken": "^8.5.1",

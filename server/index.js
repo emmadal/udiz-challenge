@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { ApolloServer } from "apollo-server";
 import mongoose from "mongoose";
 import { resolvers } from "./resolvers";
@@ -11,9 +12,7 @@ const server = new ApolloServer({
 
 const connectDatabase = async () => {
   // Initialize Database connection.
-  const DB_URI =
-    "mongodb+srv://emmadal:Qwerty2022@cluster0.fwsxr.mongodb.net/?retryWrites=true&w=majority";
-  await mongoose.connect(DB_URI, {
+  await mongoose.connect(process.env.DATABASE_URI, {
     keepAlive: true,
     serverSelectionTimeoutMS: 9000,
   });
