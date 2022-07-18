@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useFormik } from "formik";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Row,
   Col,
@@ -15,10 +14,17 @@ import {
   Label,
 } from "reactstrap";
 import * as Yup from "yup";
+import { useMutation } from "@apollo/client";
+import { REGISTER, LOGIN } from "../api";
 
 const Register = () => {
-  const [err, setErr] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [SignUp, { loading, data, error }] = useMutation(REGISTER);
+  const [
+    SignIn,
+    { loading: loadingSignin, data: dataSignin, error: errorSignin },
+  ] = useMutation(LOGIN);
+
+  const navigate = useNavigate()
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -32,20 +38,51 @@ const Register = () => {
       username: Yup.string().required("Entrez un Nom d'utilisateur valide"),
       password: Yup.string().required("Le Mot de passe est requis"),
     }),
-    onSubmit: async (values) => {
-      try {
-        setLoading(!loading);
-      } catch (error) {
-        setErr(error);
-      }
+    onSubmit: async ({ name, username, password }) => {
+      // Send mutation to GraphQL server
+      SignUp({
+        variables: {
+          input: { name, username, password },
+        },
+      });
     },
-    validateOnChange: true,
   });
+
+  // If registering is successful, triggered the login mutation
+  if (data && data?.signUp) {
+    SignIn({
+      variables: {
+        username: data?.signUp?.username,
+        password: validation.values.password,
+      },
+    });
+  }
+
+  // If login is successful, set the user token in cookie
+  // and navigate to the homepage
+  if (dataSignin && dataSignin?.signIn) {
+    // Compute token expiration time (2h)
+    const date = new Date();
+    date.setTime(date.getTime() + 2 * 60 * 60 * 1000);
+    const expires = date.toGMTString();
+    document.cookie = `udiz-token=${dataSignin?.signIn.token}; path="/; expires=${expires}; Secure;"`;
+    navigate("/", { replace: true });
+  }
+
   return (
     <div className="account-pages">
       <Container>
         <Row className="justify-content-center">
           <Col md={8} lg={6} xl={5}>
+            {(error || errorSignin) && (
+              <UncontrolledAlert
+                color="danger"
+                role="alert"
+                className="alert-dismissible"
+              >
+                {error.message || errorSignin.message}
+              </UncontrolledAlert>
+            )}
             <Card className="overflow-hidden">
               <CardBody className="pt-0">
                 <div className="p-2">
@@ -57,16 +94,6 @@ const Register = () => {
                       return false;
                     }}
                   >
-                    {err && (
-                      <UncontrolledAlert
-                        color="danger"
-                        role="alert"
-                        className="alert-dismissible"
-                      >
-                        {err}
-                      </UncontrolledAlert>
-                    )}
-
                     <div className="my-4">
                       <Label className="form-label">Nom et Prénoms</Label>
                       <Input
@@ -78,14 +105,12 @@ const Register = () => {
                         onBlur={validation.handleBlur}
                         value={validation.values.name || ""}
                         invalid={
-                          validation.touched.name &&
-                          validation.errors.name
+                          validation.touched.name && validation.errors.name
                             ? true
                             : false
                         }
                       />
-                      {validation.touched.name &&
-                      validation.errors.name ? (
+                      {validation.touched.name && validation.errors.name ? (
                         <FormFeedback type="invalid">
                           {validation.errors.name}
                         </FormFeedback>
@@ -150,9 +175,9 @@ const Register = () => {
                         type="submit"
                       >
                         Créer un compte{" "}
-                        {loading ? (
-                          <Spinner color="white" size="sm" className="mx-2" />
-                        ) : null}
+                        {(loading || loadingSignin) && (
+                          <Spinner color="light" size="sm" className="mx-2" />
+                        )}
                       </button>
                     </div>
                   </Form>

@@ -8,3 +8,12 @@ export const LOGIN = gql`
     }
   }
 `;
+
+export const REGISTER = gql`
+  mutation SignUp($input: UserInput!) {
+    signUp(input: $input) {
+      username
+      password
+    }
+  }
+`;
