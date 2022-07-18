@@ -8,6 +8,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   csrfPrevention: true,
+  cors: "no-cors",
 });
 
 const connectDatabase = async () => {

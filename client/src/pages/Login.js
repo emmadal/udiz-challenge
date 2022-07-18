@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useFormik } from "formik";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Row,
   Col,
@@ -15,10 +14,12 @@ import {
   Label,
 } from "reactstrap";
 import * as Yup from "yup";
+import { useMutation } from "@apollo/client"
+import { LOGIN } from "../api";
 
 const Login = () => {
-  const [err, setErr] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [SignIn, { loading, data, error }] = useMutation(LOGIN);
+  const navigate = useNavigate();
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -30,20 +31,38 @@ const Login = () => {
       username: Yup.string().required("Entrez un nom d'utilisateur valide"),
       password: Yup.string().required("Le mot de passe est requis"),
     }),
-    onSubmit: async (values) => {
-      try {
-        setLoading(!loading);
-      } catch (error) {
-        setErr(error)
-      }
+    onSubmit: async ({ username, password }) => {
+      // Send mutation to GraphQL server
+      SignIn({ variables: { username, password } });
     },
-    validateOnChange: true,
   });
+
+  // If login is successful, set the user token in cookie
+  // and navigate to the homepage
+  if (data && data?.signIn) {
+    // Compute token expiration time (2h)
+    const date = new Date();
+    date.setTime(date.getTime() + 2 * 60 * 60 * 1000);
+    const expires = date.toGMTString();
+
+    document.cookie = `udiz-token=${data?.signIn.token}; path="/; expires=${expires}; Secure;"`;
+    navigate("/", { replace: true });
+  }
+
   return (
     <div className="account-pages">
       <Container>
         <Row className="justify-content-center">
           <Col md={8} lg={6} xl={5}>
+            {error && (
+              <UncontrolledAlert
+                color="danger"
+                role="alert"
+                className="alert-dismissible"
+              >
+                {error.message}
+              </UncontrolledAlert>
+            )}
             <Card className="overflow-hidden">
               <CardBody className="pt-0">
                 <div className="p-2">
@@ -55,16 +74,6 @@ const Login = () => {
                       return false;
                     }}
                   >
-                    {err && (
-                      <UncontrolledAlert
-                        color="danger"
-                        role="alert"
-                        className="alert-dismissible"
-                      >
-                        {err}
-                      </UncontrolledAlert>
-                    )}
-
                     <div className="my-4">
                       <Label className="form-label">
                         Nom d&#39;utilisateur
@@ -78,12 +87,14 @@ const Login = () => {
                         onBlur={validation.handleBlur}
                         value={validation.values.username || ""}
                         invalid={
-                          validation.touched.username && validation.errors.username
+                          validation.touched.username &&
+                          validation.errors.username
                             ? true
                             : false
                         }
                       />
-                      {validation.touched.username && validation.errors.username ? (
+                      {validation.touched.username &&
+                      validation.errors.username ? (
                         <FormFeedback type="invalid">
                           {validation.errors.username}
                         </FormFeedback>
@@ -121,9 +132,9 @@ const Login = () => {
                         type="submit"
                       >
                         Se connecter{" "}
-                        {loading ? (
-                          <Spinner color="white" size="sm" className="mx-2" />
-                        ) : null}
+                        {loading && (
+                          <Spinner color="light" size="sm" className="mx-2" />
+                        )}
                       </button>
                     </div>
                   </Form>
