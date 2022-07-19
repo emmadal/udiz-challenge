@@ -13,7 +13,14 @@ export const resolvers = {
       const res = await Roof.find();
       return res;
     },
-    roof: async (_, { id }) => {},
+    roof: async (_, { id }, context) => {
+      if (!context.user)
+        throw new ApolloError(
+          "Votre session a expiré. Veuillez vous reconnecter",
+        );
+      const res = await Roof.findById(id);
+      return res;
+    },
   },
   Mutation: {
     signUp: async (_, { input }) => {
@@ -65,8 +72,17 @@ export const resolvers = {
         return await Roof.find();
       }
     },
-    updateRoof: (_, { id, input }) => {},
+    updateRoof: async (_, { id, input }, context) => {
+      if (!context.user)
+        throw new ApolloError(
+          "Votre session a expiré. Veuillez vous reconnecter",
+        );
+      const res = await Roof.findOneAndUpdate(
+        { _id: id },
+        { ...input },
+        { new: true },
+      );
+      return res;
+    },
   },
 };
-
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MmQ0NmI3OGEwZjc5NWRjNzFhMGVjNmYiLCJpYXQiOjE2NTgyNDYxNTEsImV4cCI6MTY1ODI1MzM1MX0.9uLwnvWb0vCoCHe_HSq8hq7KoyIdCx_wc04geK2njIE
