@@ -1,20 +1,16 @@
-import env from "react-dotenv";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import {
-  ApolloProvider,
-  InMemoryCache,
-  ApolloClient,
-} from "@apollo/client";
+import { ApolloProvider, InMemoryCache, ApolloClient } from "@apollo/client";
 import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 // @apollo/client config to connect to our GraphQL server
+console.log(process.env);
 const client = new ApolloClient({
-  uri: env.API_URL,
+  uri: process.env.REACT_APP_API_URL,
   cache: new InMemoryCache(),
   connectToDevTools: true,
 });
