@@ -6,9 +6,12 @@ import { User, Roof } from "./models";
 export const resolvers = {
   Query: {
     roofs: async (_, {}, context) => {
-      if(!context.user) throw new ApolloError("Votre session a expiré. Veuillez vous reconnecter");
-      const res = await Roof.find()
-      return res
+      if (!context.user)
+        throw new ApolloError(
+          "Votre session a expiré. Veuillez vous reconnecter",
+        );
+      const res = await Roof.find();
+      return res;
     },
     roof: async (_, { id }) => {},
   },
@@ -45,11 +48,23 @@ export const resolvers = {
       throw new ApolloError("Username ou Mot de passe incorrect.");
     },
     createRoof: async (_, { input }, context) => {
-      if(!context.user) throw new ApolloError("Votre session a expiré. Veuillez vous reconnecter");
-      const res = await (await Roof.create({...input})).save()
-      return res
+      if (!context.user)
+        throw new ApolloError(
+          "Votre session a expiré. Veuillez vous reconnecter",
+        );
+      const res = await (await Roof.create({ ...input })).save();
+      return res;
     },
-    deleteRoof: async (_, { id }) => {},
+    deleteRoof: async (_, { id }, context) => {
+      if (!context.user)
+        throw new ApolloError(
+          "Votre session a expiré. Veuillez vous reconnecter",
+        );
+      const res = await await Roof.deleteOne({ _id: id });
+      if (res) {
+        return await Roof.find();
+      }
+    },
     updateRoof: (_, { id, input }) => {},
   },
 };
