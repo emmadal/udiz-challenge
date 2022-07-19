@@ -40,7 +40,10 @@ export const resolvers = {
       }
       throw new ApolloError("Username ou Mot de passe incorrect.");
     },
-    createRoof: async (_, { input }) => {},
+    createRoof: async (_, { input }, context) => {
+      if(!context.user) throw new ApolloError("Votre session a expiré. Veuillez vous reconnecter");
+      console.log(context)
+    },
     deleteRoof: async (_, { id }) => {},
     updateRoof: (_, { id, input }) => {},
   },

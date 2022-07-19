@@ -61,11 +61,7 @@ const Register = () => {
   // If login is successful, set the user token in cookie
   // and navigate to the homepage
   if (dataSignin && dataSignin?.signIn) {
-    // Compute token expiration time (2h)
-    const date = new Date();
-    date.setTime(date.getTime() + 2 * 60 * 60 * 1000);
-    const expires = date.toGMTString();
-    document.cookie = `udiz-token=${dataSignin?.signIn.token}; path="/; expires=${expires}; Secure;"`;
+    localStorage.setItem("UDIZ_TOKEN", dataSignin?.signIn.token);
     navigate("/", { replace: true });
   }
 

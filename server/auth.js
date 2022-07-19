@@ -13,9 +13,9 @@ export const generateValidToken = (userId) => {
 export const verifyToken = (token) => {
   try {
     const payload = jwt.verify(token, process.env.SECRET_KEY);
-    return payload.userId;
+    return payload;
   } catch (error) {
-    return error.message;
+    throw new Error(error.message);
   }
 };
 

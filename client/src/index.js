@@ -2,15 +2,30 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import { ApolloProvider, InMemoryCache, ApolloClient } from "@apollo/client";
+import { ApolloProvider, InMemoryCache, ApolloClient, createHttpLink } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+
 import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
-// @apollo/client config to connect to our GraphQL server
-console.log(process.env);
-const client = new ApolloClient({
+const httpLink = createHttpLink({
   uri: process.env.REACT_APP_API_URL,
+});
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem("UDIZ_TOKEN");
+  return {
+    headers: {
+      ...headers,
+      authorization: `${token}` || "",
+    },
+  };
+});
+
+// @apollo/client config to connect to our GraphQL server
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
   connectToDevTools: true,
 });

@@ -40,12 +40,7 @@ const Login = () => {
   // If login is successful, set the user token in cookie
   // and navigate to the homepage
   if (data && data?.signIn) {
-    // Compute token expiration time (2h)
-    const date = new Date();
-    date.setTime(date.getTime() + 2 * 60 * 60 * 1000);
-    const expires = date.toGMTString();
-
-    document.cookie = `udiz-token=${data?.signIn.token}; path="/; expires=${expires}; Secure;"`;
+    localStorage.setItem("UDIZ_TOKEN", data?.signIn.token);
     navigate("/", { replace: true });
   }
 
