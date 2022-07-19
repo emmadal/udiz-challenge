@@ -5,7 +5,11 @@ import { User, Roof } from "./models";
 
 export const resolvers = {
   Query: {
-    roofs: async () => {},
+    roofs: async (_, {}, context) => {
+      if(!context.user) throw new ApolloError("Votre session a expiré. Veuillez vous reconnecter");
+      const res = await Roof.find()
+      return res
+    },
     roof: async (_, { id }) => {},
   },
   Mutation: {
@@ -42,9 +46,12 @@ export const resolvers = {
     },
     createRoof: async (_, { input }, context) => {
       if(!context.user) throw new ApolloError("Votre session a expiré. Veuillez vous reconnecter");
-      console.log(context)
+      const res = await (await Roof.create({...input})).save()
+      return res
     },
     deleteRoof: async (_, { id }) => {},
     updateRoof: (_, { id, input }) => {},
   },
 };
+
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MmQ0NmI3OGEwZjc5NWRjNzFhMGVjNmYiLCJpYXQiOjE2NTgyNDYxNTEsImV4cCI6MTY1ODI1MzM1MX0.9uLwnvWb0vCoCHe_HSq8hq7KoyIdCx_wc04geK2njIE
